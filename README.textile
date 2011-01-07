@@ -1,0 +1,68 @@
+h1. Airports
+
+Code and outline for the training session on Pig at "Data Day Austin 2011":http://geekaustin.org/news/2011/01/05/hadoop-training-austin-50-no-way. We will not 'learn Pig' at this training session. Instead, we will 'learn **enough** Pig' to answer an interesting question. Namely, "How were domestic aiports affected by the September 11th attacks of 2001?"
+
+h2. Outline
+
+* Get Data
+** We will gather all our raw data sources together
+* Explore Data
+** head, cut, etc just to see what it looks like
+* Load Data
+** We will upload our data to the HDFS (Hadoop Distributed File System)
+* Analyze Data
+** flights and passengers degree distribution
+** join with geo-location
+* Get answers
+** look at degree distribution for select airports over time (timeseries)
+** look at degree distribution for all airports over time (on a map)
+
+
+h2. Get Data
+
+Before we can even begin to answer this question we've got to have the data. Fortunately all of the data we need (and more) can be found at "Infochimps":http://infochimps.com/. The first data set of interest contains over 9000 airports, their airport codes, and most importantly, their geo-locations. It can be downloaded "here":http://infochimps.com/datasets/d9000-airports-and-their-locations. Here's a quick sample of that dataset:
+
+|airport_code|latitude|longitude|airport_name|city|country|country_abbv|gmt_offset|runway_length|runway_elevation|
+|MSW|15.67|39.3700|Massawa International|Massawa|Eritrea|ER|+3.0|11471|194|
+|TES|15.1166|36.6833|Tessenei|Tessenei|Eritrea|ER|+3.0|6234|2018|
+|ASM|15.2919|38.9105|Yohannes IV|Asmara|Eritrea|ER|+3.0|9843|7661|
+|ASA|13.0716|42.6449|Assab International|Assab|Eritrea|ER|+3.0|7546|46|
+|NLK|-29.0416|167.9386|Norfolk Island|Norfolk Island|Norfolk Island|NF|+11.5|6400|371|
+|URT|9.1|99.3333|Surat Thani|Surat Thani|Thailand|TH|-7.0|8202|19|
+|PHZ|8.1666|98.2833|Phi Phi Island|Phi Phi Island|Thailand|TH|-7.0||| 
+|PHS|16.7833|100.2666|Phitsanulok|Phitsanulok|Thailand|TH|-7.0|9843|145|
+|UTP|12.6666|100.9833|Utapao|Utapao|Thailand|TH|+7.0|11500|59|
+|UTH|17.3863|102.7883|Udon Thani|Udon Thani|Thailand|TH|+7.0|10000|579|
+
+The last data set we need is really just a giant network graph detailing the number of flights and passengers between domestic airports for almost 20 years. It's awesome. This can be downloaded "here":http://infochimps.com/datasets/d35-million-us-domestic-flights-from-1990-to-2009-edges-only And here's what that data set looks like:
+
+|origin_airport|destin_airport|passengers|flights|month|
+|MHK|AMW|21|1|200810|
+|EUG|RDM|41|22|199011|
+|EUG|RDM|88|19|199012|
+|EUG|RDM|11|4|199010|
+|MFR|RDM|0|1|199002|
+|MFR|RDM|11|1|199003|
+|MFR|RDM|2|4|199001|
+|MFR|RDM|7|1|199009|
+|MFR|RDM|7|2|199011|
+
+Note this is a cut down sample of the **really** interesting full data "set":http://infochimps.com/datasets/d35-million-us-domestic-flights-from-1990-to-2009 which has origin and destination populations and other edge metadata.
+
+h2. Explore Data
+
+All the data here is small enough to explore on a single machine and with standard unix command-line tools. Take a moment to do so. Recommended: @cat@, @head@, @cut@, @wc -l@, @uniq -c@. This allows you to really understand what it is that you're dealing with. Don't fly blind.
+
+h3. Load Data
+
+This step is optional. That is, if previously in the day you set up Hadoop in distributed (or pseudo-distributed) mode, this step is for you. Otherwise, put your data files in some suitable work directory and keep exploring.
+
+Assuming your data files are called @flights_with_colnames.tsv@ and @airport_locations.tsv@ to upload simply do:
+
+<pre><code>
+hadoop fs -mkdir /data/domestic/airports
+hadoop fs -put flights_with_colnames.tsv /data/domestic/airports/
+hadoop fs -put airport_locations.tsv /data/domestic/airports/
+</code></pre>
+
+will put your data files into a directory called @/data/domestice/airports/@ on the hdfs. Now pig can see them when ran in hadoop mode.
