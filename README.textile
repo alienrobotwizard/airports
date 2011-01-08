@@ -14,8 +14,8 @@ h2. Outline
 ** flights and passengers degree distribution
 ** join with geo-location
 * Get answers
-** look at degree distribution for select airports over time (timeseries)
-** look at degree distribution for all airports over time (on a map)
+** look at degree (passengers and flights in and out) for select airports over time (timeseries)
+** look at degree (passengers and flights in and out) for all airports over time (on a map)
 
 
 h2. Get Data
@@ -53,7 +53,7 @@ h2. Explore Data
 
 All the data here is small enough to explore on a single machine and with standard unix command-line tools. Take a moment to do so. Recommended: @cat@, @head@, @cut@, @wc -l@, @uniq -c@. This allows you to really understand what it is that you're dealing with. Don't fly blind.
 
-h3. Load Data
+h2. Load Data
 
 This step is optional. That is, if previously in the day you set up Hadoop in distributed (or pseudo-distributed) mode, this step is for you. Otherwise, put your data files in some suitable work directory and keep exploring.
 
@@ -66,3 +66,37 @@ hadoop fs -put airport_locations.tsv /data/domestic/airports/
 </code></pre>
 
 will put your data files into a directory called @/data/domestice/airports/@ on the hdfs. Now pig can see them when ran in hadoop mode.
+
+h2. Analyze Data
+
+The next step (finally, some pig!) is to actually analyze our data. Before we can do that we have to decide what question we want to answer:
+
+"How were domestic aiports affected by the September 11th attacks of 2001?"
+
+and break this into smaller, less general, questions:
+
+* What time window are we concerned with? (200104-200201) is probably a good choice.
+* What does the passenger degree distribution (that's number of passengers in + number of passengers out for all airports) look like? and how does it change over our time window?
+* What does the flights degree distribution (that's number of flights in + number of flights out for all airports) look like? and how does it change over our time window?
+* For select airports (choose a handful, eg. LAX, JFK, DFW, etc), how does their passenger and flight degree change over the time window we are looking at?
+* For all airports, how does their passenger and flight degree change over the time window we are looking at?
+* What airport(s) were the most affected? the least?
+* Anything else interesting here?
+
+And then decide how to answer these smaller questions with Pig syntax (some will require making plots for full effect).
+
+h3. Mapping Questions to "Pig Queries"
+
+* What time window are we concerned with?
+
+Say it's 200107 to 200201 then you'd say:
+
+<pre><code>
+-- Load data (boring part)
+flight_edges = LOAD '$FLIGHT_EDGES' AS (origin_code:chararray, destin_code:chararray, passengers:int, flights:int, month:int);
+--
+
+-- Pull out data for a specific time window
+time_window = FILTER flight_edges BY (month > 200106) AND (month < 200202);
+
+</code></pre>
