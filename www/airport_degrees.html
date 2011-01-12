@@ -2,10 +2,13 @@
   <head>
     <title>Symbol Map</title>
     <link type="text/css" rel="stylesheet" href="css/ex.css"/>
+    <link type="text/css" rel="stylesheet" href="css/tipsy.css"/>
     <link type="text/css" rel="stylesheet" href="css/jquery-ui-1.8.7.custom.css"/>
     <script type="text/javascript" src="js/protovis-r3.2.js"></script>
     <script type="text/javascript" src="js/jquery-1.4.4.min.js"></script>
-    <script type="text/javascript" src="js/jquery-ui-1.8.7.custom.min.js"></script>    
+    <script type="text/javascript" src="js/jquery-ui-1.8.7.custom.min.js"></script>
+    <script type="text/javascript" src="js/jquery.tipsy.js"></script>
+    <script type="text/javascript" src="js/tipsy.js"></script>
     <script type="text/javascript" src="data/us_lowres.js"></script>
     <script type="text/javascript" src="data/degree_dist_geo.js"></script>
     <style type="text/css">
@@ -158,8 +161,9 @@
               .lineWidth(1)
               .radius(function(c) Math.sqrt(10*c.flights_degree)*rScale)
               .text(function(x,c) c.airport_code)
-              .event("mouseover", pv.Behavior.tipsy({gravity: "w", fade: true}));
-
+              .event("mouseover", pv.Behavior.tipsy({gravity: "w", fade: true}))
+              ;
+                    
           // Add the legend
           vis.add(pv.Dot)
             .data(["up to 1", "up to 10", "up to 30", "up to 50", "up to 70", "up to 100", "greater than 100"])
@@ -170,7 +174,7 @@
             .anchor("right").add(pv.Label);
 
           vis.render();
-          console.log("done :)");
+
         </script>
   </div></div></body>
 </html>

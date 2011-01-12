@@ -33,6 +33,8 @@ class Reducer < Wukong::Streamer::AccumulatingReducer
   end
 
   def after_stream
+    # So big stuff lands on the bottom in the vis
+    @var.each{|year, history| @var[year] = history.sort_by{|airport| - airport[:flights_degree]} }
     File.open('data/degree_dist_geo.js', 'wb'){|f| f.puts "var degree_dist = #{JSON.pretty_generate(JSON.parse(@var.to_json))};"}
   end
 end
