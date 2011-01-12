@@ -26,7 +26,7 @@ class Reducer < Wukong::Streamer::AccumulatingReducer
   # year, lat, lon, passenger_degree, flights_degree, airport_code
   def accumulate *args
     year, airport_code, lat, lng, passenger_degree, flights_degree, passengers_per_flight = args
-    @var[year.to_i] << {:lat => lat.to_f, :lng => lng.to_f, :passenger_degree => passenger_degree.to_i, :flights_degree => flights_degree.to_i, :airport_code => airport_code, :ppf => passengers_per_flight.to_f}
+    @var[year.to_i] << {:lat => lat.to_f, :lng => lng.to_f, :passenger_degree => passenger_degree.to_i, :flights_degree => flights_degree.to_i, :airport_code => airport_code, :ppf => passengers_per_flight.to_f.round}
   end
 
   def finalize &blk

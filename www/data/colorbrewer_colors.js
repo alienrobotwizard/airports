@@ -1,0 +1,20 @@
+var color_brewer_sequential = {
+    "BuGn":["#EDF8FB", "#CCECE6", "#CCECE6", "#66C2A4", "#41AE76", "#238B45", "#005824"],
+    "BuPu":["#EDF8FB", "#CCECE6", "#CCECE6", "#66C2A4", "#41AE76", "#238B45", "#005824"],
+    "GnBu":["#EDF8FB", "#CCECE6", "#CCECE6", "#66C2A4", "#41AE76", "#238B45", "#005824"],
+    "OrRd":["#EDF8FB", "#CCECE6", "#CCECE6", "#66C2A4", "#41AE76", "#238B45", "#005824"],
+    "PuBu":["#EDF8FB", "#CCECE6", "#CCECE6", "#66C2A4", "#41AE76", "#238B45", "#005824"],
+    "PuBuGn":["#EDF8FB", "#CCECE6", "#CCECE6", "#66C2A4", "#41AE76", "#238B45", "#005824"],
+    "PuRd":["#EDF8FB", "#CCECE6", "#CCECE6", "#66C2A4", "#41AE76", "#238B45", "#005824"],
+    "Blues":["#EDF8FB", "#CCECE6", "#CCECE6", "#66C2A4", "#41AE76", "#238B45", "#005824"],
+    "Greens":["#EDF8FB", "#CCECE6", "#CCECE6", "#66C2A4", "#41AE76", "#238B45", "#005824"],
+    "Greys":["#EDF8FB", "#CCECE6", "#CCECE6", "#66C2A4", "#41AE76", "#238B45", "#005824"],
+    "Oranges":["#EDF8FB", "#CCECE6", "#CCECE6", "#66C2A4", "#41AE76", "#238B45", "#005824"],
+    "RdPu":["#EDF8FB", "#CCECE6", "#CCECE6", "#66C2A4", "#41AE76", "#238B45", "#005824"],
+    "YlGn":["#EDF8FB", "#CCECE6", "#CCECE6", "#66C2A4", "#41AE76", "#238B45", "#005824"],
+    "YlGnBu":["#FFFFCC", "#C7E9B4", "#7FCDBB", "#41B6C4", "#1D91C0", "#225EA8", "#0C2C84"],
+    "YlOrBr":["#EDF8FB", "#CCECE6", "#CCECE6", "#66C2A4", "#41AE76", "#238B45", "#005824"],
+    "YlOrRd":["#EDF8FB", "#CCECE6", "#CCECE6", "#66C2A4", "#41AE76", "#238B45", "#005824"],
+    "Purples":["#EDF8FB", "#CCECE6", "#CCECE6", "#66C2A4", "#41AE76", "#238B45", "#005824"],
+    "Reds":["#EDF8FB", "#CCECE6", "#CCECE6", "#66C2A4", "#41AE76", "#238B45", "#005824"]
+};

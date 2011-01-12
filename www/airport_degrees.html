@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>Symbol Map</title>
+    <title>Airport Flight and Passenger Degrees 1990 to 2009</title>
     <link type="text/css" rel="stylesheet" href="css/ex.css"/>
     <link type="text/css" rel="stylesheet" href="css/tipsy.css"/>
     <link type="text/css" rel="stylesheet" href="css/jquery-ui-1.8.7.custom.css"/>
@@ -11,6 +11,7 @@
     <script type="text/javascript" src="js/tipsy.js"></script>
     <script type="text/javascript" src="data/us_lowres.js"></script>
     <script type="text/javascript" src="data/degree_dist_geo.js"></script>
+    <script type="text/javascript" src="data/colorbrewer_colors.js"></script>
     <style type="text/css">
 
       #fig {
@@ -55,16 +56,14 @@
 
           // Colors by ColorBrewer.org, Cynthia A. Brewer, Penn State.
           var colours = function(v) {
-            if (v < 1) return "#8C510A";
-            if (v < 10) return "#D8B365";
-            if (v < 30) return "#F6E8C3";
-            if (v < 50) return "#F5F5F5";
-            if (v < 70) return "#C7EAE5";
-            if (v < 100) return "#5AB4AC";
-            return "#01665E";
+            if (v < 25) return color_brewer_sequential["YlGnBu"][0];
+            if (v < 40) return color_brewer_sequential["YlGnBu"][1];
+            if (v < 55) return color_brewer_sequential["YlGnBu"][2];
+            if (v < 70) return color_brewer_sequential["YlGnBu"][3];
+            if (v < 85) return color_brewer_sequential["YlGnBu"][4];
+            if (v < 110) return color_brewer_sequential["YlGnBu"][5];
+            return color_brewer_sequential["YlGnBu"][6];
           };
-
-          var color_bucket = ["#8C510A", "#D8B365", "#F6E8C3", "#F5F5F5", "#C7EAE5", "#5AB4AC", "#01665E"];
 
           //Just use slider to set the year we want
           var year,
@@ -102,12 +101,12 @@
               if (year == maxYear) year = minYear;
               $(yearSlider).slider('value', year);
               $(play).attr("src", 'images/stop.png');
-              degrees.render();                    
+              degrees.root.render();                    
               timer = setInterval(function() {
                 year++;
                 if (year >= maxYear) stop();
                 $(yearSlider).slider('value', year);
-                degrees.render();                    
+                degrees.root.render();                    
               }, 900);
             }
           }
@@ -160,18 +159,26 @@
               .strokeStyle("black")
               .lineWidth(1)
               .radius(function(c) Math.sqrt(10*c.flights_degree)*rScale)
-              .text(function(x,c) c.airport_code)
+              .text(function(x,c) "Airport: "+c.airport_code+", Passengers per flight: "+c.ppf)
               .event("mouseover", pv.Behavior.tipsy({gravity: "w", fade: true}))
               ;
                     
           // Add the legend
           vis.add(pv.Dot)
             .data(["up to 1", "up to 10", "up to 30", "up to 50", "up to 70", "up to 100", "greater than 100"])
-            .left(10)
+            .left(25)
             .bottom(function() this.index * 12 + 10)
             .strokeStyle(null)
-            .fillStyle(function() color_bucket[this.index])
+            .fillStyle(function() color_brewer_sequential["YlGnBu"][this.index])
             .anchor("right").add(pv.Label);
+
+          // Add the legend title
+          vis.add(pv.Label)
+            .left(3)
+            .bottom(7*12+10)
+            .font("bold 1.45em sans-serif")
+            .text("Passengers Per Flight")
+          ;
 
           vis.render();
 
