@@ -52,12 +52,12 @@
 
           // Colors by ColorBrewer.org, Cynthia A. Brewer, Penn State.
           var colours = function(v) {
-            if (v < 100) return "#8C510A";
-            if (v < 1000) return "#D8B365";
-            if (v < 10000) return "#F6E8C3";
-            if (v < 100000) return "#F5F5F5";
-            if (v < 1000000) return "#C7EAE5";
-            if (v < 10000000) return "#5AB4AC";
+            if (v < 1) return "#8C510A";
+            if (v < 10) return "#D8B365";
+            if (v < 30) return "#F6E8C3";
+            if (v < 50) return "#F5F5F5";
+            if (v < 70) return "#C7EAE5";
+            if (v < 100) return "#5AB4AC";
             return "#01665E";
           };
 
@@ -153,14 +153,16 @@
             .add(pv.Dot)
               .left(function(c) scale({lng:c.lng, lat:c.lat}).x)
               .top(function(c)  scale({lng:c.lng, lat:c.lat}).y)
-              .fillStyle(function(c) colours(c.passenger_degree))
+              .fillStyle(function(c) colours(c.ppf))
               .strokeStyle("black")
               .lineWidth(1)
               .radius(function(c) Math.sqrt(10*c.flights_degree)*rScale)
+              .text(function(x,c) c.airport_code)
+              .event("mouseover", pv.Behavior.tipsy({gravity: "w", fade: true}));
 
           // Add the legend
           vis.add(pv.Dot)
-            .data(["up to 100", "up to 1,000", "up to 10,000", "up to 100,000", "up to 1,000,000", "up to 10,000,000", "greater than 10,000,000"])
+            .data(["up to 1", "up to 10", "up to 30", "up to 50", "up to 70", "up to 100", "greater than 100"])
             .left(10)
             .bottom(function() this.index * 12 + 10)
             .strokeStyle(null)
