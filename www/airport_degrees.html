@@ -164,10 +164,11 @@
               ;
 
           // Add the passengers per seat legend
+          var pps_dist_from_bottom = 60;
           vis.add(pv.Dot)
             .data(["up to 0.25", "up to 0.4", "up to 0.5", "up to 0.6", "up to 0.7", "up to 0.8", "up to 1.0"])
             .left(25)
-            .bottom(function() this.index * 12 + 10)
+            .bottom(function() this.index * 12 + pps_dist_from_bottom)
             .strokeStyle(null)
             .fillStyle(function() color_brewer_sequential["YlGnBu"][this.index])
             .anchor("right").add(pv.Label)
@@ -176,19 +177,19 @@
           // Add the legend title
           vis.add(pv.Label)
             .left(3)
-            .bottom(7*12+10)
+            .bottom(7*12+pps_dist_from_bottom)
             .font("bold 1.45em sans-serif")
             .text("Passengers Per Seat")
           ;
                     
           var max_radius = Math.sqrt(10*1000000)*rScale;
           var scale_points = [1000000, 250000, 10000];
-          var distance_from_bottom = 150;
+          var flights_dist_from_bottom = 90;
           for(var i=0; i < scale_points.length; i++) {
             vis.add(pv.Dot)
               .data([scale_points[i]])
               .right(125)
-              .bottom(function(c) distance_from_bottom - (Math.sqrt(10*c)*rScale - max_radius))
+              .bottom(function(c) flights_dist_from_bottom - (Math.sqrt(10*c)*rScale - max_radius))
               .strokeStyle("black")
               .lineWidth(1)
               .radius(function(c) Math.sqrt(10*c)*rScale)
@@ -196,6 +197,14 @@
                 .text(function(c) c)
             ;
           };
+
+          // Add the legend title
+          vis.add(pv.Label)
+            .right(205)
+            .bottom(5*12+flights_dist_from_bottom)
+            .font("bold 1.45em sans-serif")
+            .text("Flights in + Flights out")
+          ;
           
           vis.render();
 
