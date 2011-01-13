@@ -11,7 +11,7 @@
 --
 
 -- Load data (boring part)
-flight_edges = LOAD '$FLIGHT_EDGES' AS (origin_code:chararray, destin_code:chararray, passengers:int, flights:int, month:int);
+flight_edges = LOAD '$FLIGHT_EDGES' AS (origin_code:chararray, destin_code:chararray, origin_city:chararray, destin_city:chararray, passengers:int, seats:int, flights:int, distance:float, month:int, origin_pop:int, destin_pop:int);
 --
 
 -- Cut off all monthly data portion and sum up everything for a given year
@@ -21,6 +21,7 @@ year_data     = FOREACH flight_edges {
                     origin_code AS origin_code,
                     destin_code AS destin_code,
                     passengers  AS passengers,
+                    seats       AS seats,
                     flights     AS flights,
                     year        AS year
                   ;
@@ -31,6 +32,7 @@ edges_out     = FOREACH year_data GENERATE
                   origin_code AS airport,
                   year        AS year,
                   passengers  AS passengers_out,
+                  seats       AS seats_out,
                   flights     AS flights_out
                 ;
 
@@ -39,6 +41,7 @@ edges_in      = FOREACH year_data GENERATE
                   destin_code AS airport,
                   year        AS year,
                   passengers  AS passengers_in,
+                  seats       AS seats_in,
                   flights     AS flights_in
                 ;
 
@@ -46,10 +49,12 @@ edges_in      = FOREACH year_data GENERATE
 grouped_edges = COGROUP edges_in BY (airport,year), edges_out BY (airport,year);
 degree_dist   = FOREACH grouped_edges {
                   passenger_degree = SUM(edges_in.passengers_in) + SUM(edges_out.passengers_out);
+                  seats_degree     = SUM(edges_in.seats_in)      + SUM(edges_out.seats_out);
                   flights_degree   = SUM(edges_in.flights_in)    + SUM(edges_out.flights_out);
                   GENERATE
                     FLATTEN(group)   AS (airport, year),
                     passenger_degree AS passenger_degree,
+                    seats_degree     AS seats_degree,
                     flights_degree   AS flights_degree
                   ;
                 };

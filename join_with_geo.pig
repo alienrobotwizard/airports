@@ -12,7 +12,7 @@
 --
 
 -- Load data (boring part)
-deg_dist = LOAD '$DEG_DIST' AS (airport_code:chararray, year:int, passenger_degree:int, flights_degree:int);
+deg_dist = LOAD '$DEG_DIST' AS (airport_code:chararray, year:int, passenger_degree:int, seats_degree:int, flights_degree:int);
 airports = LOAD '$AIRPORTS' AS (airport_code:chararray, latitude:float, longitude:float); -- other fields will be dropped
 --
 
@@ -23,6 +23,7 @@ with_geo_flat = FOREACH with_geo GENERATE
                   airports::latitude         AS latitude,
                   airports::longitude        AS longitude,
                   deg_dist::passenger_degree AS passenger_degree,
+                  deg_dist::seats_degree     AS seats_degree,
                   deg_dist::flights_degree   AS flights_degree,
                   deg_dist::year             AS year
                 ;
