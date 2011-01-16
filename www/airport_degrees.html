@@ -55,13 +55,13 @@
         <script type="text/javascript+protovis">
 
           // Colors by ColorBrewer.org, Cynthia A. Brewer, Penn State.
-          var colours = function(v) {
-            if (v < 25) return color_brewer_sequential["YlGnBu"][0];
-            if (v < 40) return color_brewer_sequential["YlGnBu"][1];
-            if (v < 55) return color_brewer_sequential["YlGnBu"][2];
-            if (v < 70) return color_brewer_sequential["YlGnBu"][3];
-            if (v < 85) return color_brewer_sequential["YlGnBu"][4];
-            if (v < 110) return color_brewer_sequential["YlGnBu"][5];
+           var colours = function(v) {
+            if (v < 0.25) return color_brewer_sequential["YlGnBu"][0];
+            if (v < 0.4) return color_brewer_sequential["YlGnBu"][1];
+            if (v < 0.5) return color_brewer_sequential["YlGnBu"][2];
+            if (v < 0.6) return color_brewer_sequential["YlGnBu"][3];
+            if (v < 0.7) return color_brewer_sequential["YlGnBu"][4];
+            if (v < 0.8) return color_brewer_sequential["YlGnBu"][5];
             return color_brewer_sequential["YlGnBu"][6];
           };
 
@@ -83,7 +83,7 @@
           var w       = 1215,
           h           = 600,
           yearsMargin = 100,
-          rScale      = (1 / 80);
+          rScale      = (1 / 65);
 
           var scale = pv.Geo.scale()
             .domain({lng: -128, lat: 24}, {lng: -64, lat: 50})
@@ -155,31 +155,57 @@
             .add(pv.Dot)
               .left(function(c) scale({lng:c.lng, lat:c.lat}).x)
               .top(function(c)  scale({lng:c.lng, lat:c.lat}).y)
-              .fillStyle(function(c) colours(c.ppf))
+              .fillStyle(function(c) colours(c.pps))
               .strokeStyle("black")
               .lineWidth(1)
               .radius(function(c) Math.sqrt(10*c.flights_degree)*rScale)
-              .text(function(x,c) "Airport: "+c.airport_code+", Passengers per flight: "+c.ppf)
+              .text(function(x,c) "Airport: "+c.airport_code+", Flights: "+c.flights_degree+", Passengers per seat: "+c.pps)
               .event("mouseover", pv.Behavior.tipsy({gravity: "w", fade: true}))
               ;
-                    
-          // Add the legend
+
+          // Add the passengers per seat legend
+          var pps_dist_from_bottom = 60;
           vis.add(pv.Dot)
-            .data(["up to 1", "up to 10", "up to 30", "up to 50", "up to 70", "up to 100", "greater than 100"])
+            .data(["up to 0.25", "up to 0.4", "up to 0.5", "up to 0.6", "up to 0.7", "up to 0.8", "up to 1.0"])
             .left(25)
-            .bottom(function() this.index * 12 + 10)
+            .bottom(function() this.index * 12 + pps_dist_from_bottom)
             .strokeStyle(null)
             .fillStyle(function() color_brewer_sequential["YlGnBu"][this.index])
-            .anchor("right").add(pv.Label);
+            .anchor("right").add(pv.Label)
+          ;
 
           // Add the legend title
           vis.add(pv.Label)
             .left(3)
-            .bottom(7*12+10)
+            .bottom(7*12+pps_dist_from_bottom)
             .font("bold 1.45em sans-serif")
-            .text("Passengers Per Flight")
+            .text("Passengers Per Seat")
           ;
+                    
+          var max_radius = Math.sqrt(10*1000000)*rScale;
+          var scale_points = [1000000, 250000, 10000];
+          var flights_dist_from_bottom = 90;
+          for(var i=0; i < scale_points.length; i++) {
+            vis.add(pv.Dot)
+              .data([scale_points[i]])
+              .right(125)
+              .bottom(function(c) flights_dist_from_bottom - (Math.sqrt(10*c)*rScale - max_radius))
+              .strokeStyle("black")
+              .lineWidth(1)
+              .radius(function(c) Math.sqrt(10*c)*rScale)
+              .anchor("bottom").add(pv.Label)
+                .text(function(c) c)
+            ;
+          };
 
+          // Add the legend title
+          vis.add(pv.Label)
+            .right(205)
+            .bottom(5*12+flights_dist_from_bottom)
+            .font("bold 1.45em sans-serif")
+            .text("Flights in + Flights out")
+          ;
+          
           vis.render();
 
         </script>
