@@ -1,6 +1,8 @@
 h1. Airports
 
-Code and outline for the training session on Pig at "Data Day Austin 2011":http://geekaustin.org/news/2011/01/05/hadoop-training-austin-50-no-way. We will not 'learn Pig' at this training session. Instead, we will 'learn **enough** Pig' to answer an interesting question. Namely, "How were domestic aiports affected by the September 11th attacks of 2001?"
+Code and outline for the training session on Pig at "Data Day Austin 2011":http://geekaustin.org/news/2011/01/05/hadoop-training-austin-50-no-way. We will not 'learn Pig' at this training session. Instead, we will 'learn **enough** Pig' to answer some interesting questions. Namely, how have domestic airports changed since 1990?
+
+Take-away: How can we integrate Apache Pig into an analytic workflow?
 
 h2. Outline
 
@@ -10,13 +12,13 @@ h2. Outline
 ** head, cut, etc just to see what it looks like
 * Load Data
 ** We will upload our data to the HDFS (Hadoop Distributed File System)
-* Analyze Data
+* Pig Setup
+** An aside moment to ensure everyone is on the same page with Apache Pig
+* Analyze Data (Pig!)
 ** flights and passengers degree distribution
 ** join with geo-location
 * Get answers
-** look at degree (passengers and flights in and out) for select airports over time (timeseries)
-** look at degree (passengers and flights in and out) for all airports over time (on a map)
-
+** look at degree (passenger, seat, and flight) distributions as a function of time 
 
 h2. Get Data
 
@@ -67,22 +69,148 @@ hadoop fs -put airport_locations.tsv /data/domestic/airports/
 
 will put your data files into a directory called @/data/domestice/airports/@ on the hdfs. Now pig can see them when ran in hadoop mode.
 
+Now that we have the data on the hdfs (or locally) let's open up a Pig interactive shell, load the data into pig, and dump out the first 10 lines or so. This will really quickly ensure we've got all our configuration in order:
+
+<pre><code>
+$: pig
+
+...
+... initialization messages
+...
+
+grunt> flight_edges = LOAD '/data/domestic/airports/flights_with_colnames' AS (origin_code:chararray, destin_code:chararray, origin_city:chararray, destin_city:chararray, passengers:int, seats:int, flights:int, distance:float, month:int, origin_pop:int, destin_pop:int);
+grunt> ten_flight_edges = LIMIT flight_edges 10;
+grunt> DUMP ten_flight_edges;
+</code></pre>
+
+You should see Pig start spamming your screen with all sorts of messages. Ultimately you'll see 10 lines of data on your screen.
+
+Do the same for the airport locations.
+
+Questions?
+
 h2. Analyze Data
 
 The next step (finally, some pig!) is to actually analyze our data. Before we can do that we have to decide what question we want to answer:
 
-"How were domestic aiports affected by the September 11th attacks of 2001?"
+"How have domestic airports changed since 1990?"
 
-and break this into smaller, less general, questions:
+and break this into smaller, more specific, questions:
 
-* What does the passenger degree distribution (that's number of passengers in + number of passengers out for all airports) look like? and how does it change over our time window?
-* What does the flights degree distribution (that's number of flights in + number of flights out for all airports) look like? and how does it change over our time window?
-* For select airports (choose a handful, eg. LAX, JFK, DFW, etc), how does their passenger and flight degree change over the time window we are looking at?
-* For all airports, how does their passenger and flight degree change over the time window we are looking at?
-* What airport(s) were the most affected? the least?
+* What is the yearly passenger degree distribution? That is, for every airport and year, what is the sum of inbound + outbound passengers? What about seats available? What about flights?
+
+* What airports or regions were most affected? the least?
+
 * Anything else interesting here?
 
 And then decide how to answer these smaller questions with Pig syntax (some will require making plots for full effect).
 
 h3. Mapping Questions to "Pig Queries"
 
+h4. Degree Distribution
+
+Before we can answer any of the above question we have to notice that our data is broken down by month and not year. Let's fix that:
+
+<pre><code>
+-- Cut off all monthly data portion, we'll sum everything for a whole year in the next step
+year_data     = FOREACH flight_edges {
+                  year = (int)month/(int)100;
+                  GENERATE
+                    origin_code AS origin_code,
+                    destin_code AS destin_code,
+                    passengers  AS passengers,
+                    seats       AS seats,
+                    flights     AS flights,
+                    year        AS year
+                  ;
+                };
+</code></pre>
+
+Next we are interested in the degree distributions for every year. Before we can do that we need to generate passengers, seats, and flights out for every airport as well as passengers, seats, and flights in for every airport. Pig allows us to say this very succinctly:
+
+<pre><code>
+-- For every (airport,month) pair get passengers, seats, and flights out
+edges_out     = FOREACH year_data GENERATE
+                  origin_code AS airport,
+                  year        AS year,
+                  passengers  AS passengers_out,
+                  seats       AS seats_out,
+                  flights     AS flights_out
+                ;
+
+-- For every (airport,month) pair get passengers, seats, and flights in                
+edges_in      = FOREACH year_data GENERATE
+                  destin_code AS airport,
+                  year        AS year,
+                  passengers  AS passengers_in,
+                  seats       AS seats_in,
+                  flights     AS flights_in
+                ;
+</code></pre>
+
+Finally, we'll join the outbound data for a given year and airport togeher with the inbound data for the same year and aiport and sum the results:
+
+<pre><code>
+-- group them together and sum
+grouped_edges = COGROUP edges_in BY (airport,year), edges_out BY (airport,year);
+degree_dist   = FOREACH grouped_edges {
+                  passenger_degree = SUM(edges_in.passengers_in) + SUM(edges_out.passengers_out);
+                  seats_degree     = SUM(edges_in.seats_in)      + SUM(edges_out.seats_out);
+                  flights_degree   = SUM(edges_in.flights_in)    + SUM(edges_out.flights_out);
+                  GENERATE
+                    FLATTEN(group)   AS (airport, year),
+                    passenger_degree AS passenger_degree,
+                    seats_degree     AS seats_degree,
+                    flights_degree   AS flights_degree
+                  ;
+                };
+</code></pre>
+
+One final thing is to store the data out to disk:
+
+<pre><code>
+STORE degree_dist INTO '/data/domestic/airports/degree_distribution';
+</code></pre>
+
+h4. Geo-Location
+
+Well, a simple degree distribution is nice and all, but what if we want to see what regions were more affected? We might want to plot our data on a map. To do that we'll have to join our degree distribtion data with our geolocation data:
+
+Here's how to say that with Pig:
+
+<pre><code>
+-- Load data (boring part)
+deg_dist = LOAD '/data/domestic/airports/degree_distribution' AS (airport_code:chararray, year:int, passenger_degree:int, seats_degree:int, flights_degree:int);
+airports = LOAD '/data/domestic/airports/airport_locations.tsv' AS (airport_code:chararray, latitude:float, longitude:float); -- other fields will be dropped
+--
+
+-- Join tables together with inner join on common field
+with_geo      = JOIN airports BY airport_code, deg_dist BY airport_code;
+with_geo_flat = FOREACH with_geo GENERATE
+                  airports::airport_code     AS airport_code,
+                  airports::latitude         AS latitude,
+                  airports::longitude        AS longitude,
+                  deg_dist::passenger_degree AS passenger_degree,
+                  deg_dist::seats_degree     AS seats_degree,
+                  deg_dist::flights_degree   AS flights_degree,
+                  deg_dist::year             AS year
+                ;
+
+-- Store into a flat file
+STORE with_geo_flat INTO '$DEG_DIST_GEO';
+</code></pre>
+
+You can go a bit further if you choose to and think about some other things you might do with this data:
+
+<pre><code>
+-- get the maximum flights in + out per year
+by_year      = GROUP degree_dist BY year;
+big_airports = FOREACH by_year {
+                 max_flights = MAX(degree_dist.flights_degree);
+                 GENERATE
+                   group       AS year,
+                   max_flights AS max_flights;
+               };
+</code></pre>
+
+and so on.

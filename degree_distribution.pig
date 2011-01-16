@@ -14,7 +14,7 @@
 flight_edges = LOAD '$FLIGHT_EDGES' AS (origin_code:chararray, destin_code:chararray, origin_city:chararray, destin_city:chararray, passengers:int, seats:int, flights:int, distance:float, month:int, origin_pop:int, destin_pop:int);
 --
 
--- Cut off all monthly data portion and sum up everything for a given year
+-- Cut off all monthly data portion, we'll sum everything for a whole year in the next step
 year_data     = FOREACH flight_edges {
                   year = (int)month/(int)100;
                   GENERATE
@@ -27,7 +27,7 @@ year_data     = FOREACH flight_edges {
                   ;
                 };
 
--- For every (airport,month) pair get passengers and flights out
+-- For every (airport,month) pair get passengers, seats, and flights out
 edges_out     = FOREACH year_data GENERATE
                   origin_code AS airport,
                   year        AS year,
@@ -36,7 +36,7 @@ edges_out     = FOREACH year_data GENERATE
                   flights     AS flights_out
                 ;
 
--- For every (airport,month) pair get passengers and flights in
+-- For every (airport,month) pair get passengers, seats, and flights in
 edges_in      = FOREACH year_data GENERATE
                   destin_code AS airport,
                   year        AS year,
