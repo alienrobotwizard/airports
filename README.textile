@@ -238,6 +238,7 @@ big_airports = FOREACH by_year {
 
 and so on. The pig documentation "here":http://pig.apache.org/docs/r0.8.0/piglatin_ref2.html is a great overview. For more pig code examples see "sounder":https://github.com/Ganglion/sounder.
 
+h3. Local Analysis
 
 The last hadoop portion is to pull your result set down from the hdfs. Hadoop provides a nice convenience utility for doing this (only applies if you used hadoop):
 
@@ -251,3 +252,4 @@ hadoop fs -copyToLocal /data/domestic/airports/deg_dist_with_geo data/deg_dist_w
 cat data/deg_dist_with_geo/part-* > data/yearly_degrees_with_geo.tsv
 </code></pre>
 
+Now that your result data is local the next logical step is to import it into some analytics software and explore it with tools you already know. See the code in the @plot@ directory for making simple plots in "R":http://www.r-project.org/ and the @www@ directory for a visualization of the degree distribution on a map using "protovis":http://vis.stanford.edu/protovis/
