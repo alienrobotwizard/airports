@@ -172,6 +172,16 @@ One final thing is to store the data out to disk:
 STORE degree_dist INTO '/data/domestic/airports/degree_distribution';
 </code></pre>
 
+and run it (save the code into a file called 'degree_distribution.pig' or just run the one in the git repo):
+
+<pre><code>
+# local mode
+pig -x local -p FLIGHT_EDGES=/data/domestic/airports/flights_with_colnames.tsv -p DEG_DIST=/data/domestic/airports/degree_distribution degree_distribution.pig
+
+# hadoop mode
+pig -p FLIGHT_EDGES=/data/domestic/airports/flights_with_colnames.tsv -p DEG_DIST=/data/domestic/airports/degree_distribution degree_distribution.pig
+</code></pre>
+
 h4. Geo-Location
 
 Well, a simple degree distribution is nice and all, but what if we want to see what regions were more affected? We might want to plot our data on a map. To do that we'll have to join our degree distribtion data with our geolocation data:
@@ -202,6 +212,17 @@ STORE with_geo_flat INTO '$DEG_DIST_GEO';
 
 Notice that we use the projection after the @JOIN@ to pick out the fields we want from the operation.
 
+run it:
+
+<pre><code>
+# local mode:
+pig -x local -p DEG_DIST=/data/domestic/airports/degree_distribution -p AIRPORTS=/data/domestic/airports/airport_locations.tsv -p DEG_DIST_GEO=/data/domestic/airports/deg_dist_with_geo join_with_geo.pig
+
+# hadoop mode:
+pig -p DEG_DIST=/data/domestic/airports/degree_distribution -p AIRPORTS=/data/domestic/airports/airport_locations.tsv -p DEG_DIST_GEO=/data/domestic/airports/deg_dist_with_geo join_with_geo.pig
+</code></pre>
+
+
 You can go a bit further if you choose to and think about some other things you might do with this data:
 
 <pre><code>
@@ -216,3 +237,17 @@ big_airports = FOREACH by_year {
 </code></pre>
 
 and so on. The pig documentation "here":http://pig.apache.org/docs/r0.8.0/piglatin_ref2.html is a great overview. For more pig code examples see "sounder":https://github.com/Ganglion/sounder.
+
+
+The last hadoop portion is to pull your result set down from the hdfs. Hadoop provides a nice convenience utility for doing this (only applies if you used hadoop):
+
+<pre><code>
+# copy degree distribution
+hadoop fs -copyToLocal /data/domestic/airports/degree_distribution data/deg_dist
+cat data/deg_dist/part-* > data/yearly_degrees.tsv
+
+# copy degree dist with geo
+hadoop fs -copyToLocal /data/domestic/airports/deg_dist_with_geo data/deg_dist_with_geo
+cat data/deg_dist_with_geo/part-* > data/yearly_degrees_with_geo.tsv
+</code></pre>
+
