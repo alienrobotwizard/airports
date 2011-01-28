@@ -22,7 +22,7 @@ h2. Outline
 
 h2. Get Data
 
-Before we can even begin to answer this question we've got to have the data. Fortunately all of the data we need (and more) can be found at "Infochimps":http://infochimps.com/. The first data set of interest contains over 9000 airports, their airport codes, and most importantly, their geo-locations. It can be downloaded "here":http://infochimps.com/datasets/d9000-airports-and-their-locations. Here's a quick sample of that dataset:
+Before we can even begin to answer our question we've got to have the data. Fortunately all of the data we need (and more) can be found at "Infochimps":http://infochimps.com/. The first data set of interest contains over 9000 airports, their airport codes, and most importantly, their geo-locations. It can be downloaded "here":http://infochimps.com/datasets/d9000-airports-and-their-locations. Here's a quick sample of that dataset:
 
 |airport_code|latitude|longitude|airport_name|city|country|country_abbv|gmt_offset|runway_length|runway_elevation|
 |MSW|15.67|39.3700|Massawa International|Massawa|Eritrea|ER|+3.0|11471|194|
@@ -36,20 +36,17 @@ Before we can even begin to answer this question we've got to have the data. For
 |UTP|12.6666|100.9833|Utapao|Utapao|Thailand|TH|+7.0|11500|59|
 |UTH|17.3863|102.7883|Udon Thani|Udon Thani|Thailand|TH|+7.0|10000|579|
 
-The last data set we need is really just a giant network graph detailing the number of flights and passengers between domestic airports for almost 20 years. It's awesome. This can be downloaded "here":http://infochimps.com/datasets/d35-million-us-domestic-flights-from-1990-to-2009-edges-only And here's what that data set looks like:
+The last data set we need is really just a giant network graph detailing the number of flights and passengers between domestic airports for almost 20 years. It's awesome. This can be downloaded "here":http://infochimps.com/datasets/d35-million-us-domestic-flights-from-1990-to-2009 And here's what that data set looks like:
 
-|origin_airport|destin_airport|passengers|flights|month|
-|MHK|AMW|21|1|200810|
-|EUG|RDM|41|22|199011|
-|EUG|RDM|88|19|199012|
-|EUG|RDM|11|4|199010|
-|MFR|RDM|0|1|199002|
-|MFR|RDM|11|1|199003|
-|MFR|RDM|2|4|199001|
-|MFR|RDM|7|1|199009|
-|MFR|RDM|7|2|199011|
+|origin_airport|destin_airport|origin_city|destin_city|passengers|seats|flights|distance|month|origin_pop|destin_pop|
+|MFR|RDM|Medford, OR      |Bend, OR|  0|  0|1| 156|200810| 200298|157730|
+|AMA|EKO|Amarillo, TX     |Elko, NV|124|124|1| 858|199308| 202960| 40259|
+|TUS|EKO|Tucson, AZ       |Elko, NV|112|124|1| 658|199308| 711392| 40259|
+|AMA|EKO|Amarillo, TX     |Elko, NV|115|124|1| 858|199406| 206315| 41668|
+|ICT|EKO|Wichita, KS      |Elko, NV|100|124|1|1007|199607| 552884| 45034|
+|SPS|EKO|Wichita Falls, TX|Elko, NV|122|124|1|1059|199603| 147683| 45034|
 
-Note this is a cut down sample of the **really** interesting full data "set":http://infochimps.com/datasets/d35-million-us-domestic-flights-from-1990-to-2009 which has origin and destination populations and other edge metadata.
+Note this data set isn't normally free.
 
 h2. Explore Data
 
@@ -57,7 +54,7 @@ All the data here is small enough to explore on a single machine and with standa
 
 h2. Load Data
 
-This step is optional. That is, if previously in the day you set up Hadoop in distributed (or pseudo-distributed) mode, this step is for you. Otherwise, put your data files in some suitable work directory and keep exploring.
+This step is (basically) optional. That is, if previously in the day you set up Hadoop in distributed (or pseudo-distributed) mode, this step is for you. Otherwise, put your data files in some suitable work directory (say /data) and keep exploring.
 
 Assuming your data files are called @flights_with_colnames.tsv@ and @airport_locations.tsv@ to upload simply do:
 
@@ -73,11 +70,6 @@ Now that we have the data on the hdfs (or locally) let's open up a Pig interacti
 
 <pre><code>
 $: pig
-
-...
-... initialization messages
-...
-
 grunt> flight_edges = LOAD '/data/domestic/airports/flights_with_colnames' AS (origin_code:chararray, destin_code:chararray, origin_city:chararray, destin_city:chararray, passengers:int, seats:int, flights:int, distance:float, month:int, origin_pop:int, destin_pop:int);
 grunt> ten_flight_edges = LIMIT flight_edges 10;
 grunt> DUMP ten_flight_edges;
@@ -87,13 +79,15 @@ You should see Pig start spamming your screen with all sorts of messages. Ultima
 
 Do the same for the airport locations.
 
+Notes: If pig doesn't start up right away detecting your hadoop setup @PIG_CLASSPATH@ is probably to blame. Aim it at the directory containing @core-site.xml@ and @mapred-site.xml@. This is typically @/etc/hadoop/conf@.
+
 Questions?
 
 h2. Analyze Data
 
-The next step (finally, some pig!) is to actually analyze our data. Before we can do that we have to decide what question we want to answer:
+The next step (finally, some pig!) is to actually analyze our data. Before we     can do that we have to decide what question we want to answer:
 
-"How have domestic airports changed since 1990?"
+_How have domestic airports changed since 1990?_
 
 and break this into smaller, more specific, questions:
 
@@ -109,7 +103,7 @@ h3. Mapping Questions to "Pig Queries"
 
 h4. Degree Distribution
 
-Before we can answer any of the above question we have to notice that our data is broken down by month and not year. Let's fix that:
+Before we can answer any of the above question we have to notice that our data is broken down by month and not year. Let's fix that with a pig _projection_:
 
 <pre><code>
 -- Cut off all monthly data portion, we'll sum everything for a whole year in the next step
@@ -125,6 +119,8 @@ year_data     = FOREACH flight_edges {
                   ;
                 };
 </code></pre>
+
+Notice all the nifty things we can do (ie. before the @GENERATE@ part we could do a whole lot more, and we can rename and rearrange fields). Often you find yourself doing simple math during a projection as we'll see next.
 
 Next we are interested in the degree distributions for every year. Before we can do that we need to generate passengers, seats, and flights out for every airport as well as passengers, seats, and flights in for every airport. Pig allows us to say this very succinctly:
 
@@ -148,6 +144,8 @@ edges_in      = FOREACH year_data GENERATE
                 ;
 </code></pre>
 
+This part wasn't strictly necessary but it reads well. It doesn't hurt us either because the pig optimizer rolls up all contiguous projections into one hadoop map task.
+
 Finally, we'll join the outbound data for a given year and airport togeher with the inbound data for the same year and aiport and sum the results:
 
 <pre><code>
@@ -165,6 +163,8 @@ degree_dist   = FOREACH grouped_edges {
                   ;
                 };
 </code></pre>
+
+Here we're using the @COGROUP@ operator to join the two relations (edges out and edges in) by their common key (airport,year). This will result in two big _bags_ that must be _flattened_ in the projection. During the projection we @SUM@ the appropriate meta data. One peculiarity of pig is that the join key after a @GROUP@ or @COGROUP@ operation is called _group_. We have to use the @FLATTEN@ operator on it.
 
 One final thing is to store the data out to disk:
 
@@ -200,6 +200,8 @@ with_geo_flat = FOREACH with_geo GENERATE
 STORE with_geo_flat INTO '$DEG_DIST_GEO';
 </code></pre>
 
+Notice that we use the projection after the @JOIN@ to pick out the fields we want from the operation.
+
 You can go a bit further if you choose to and think about some other things you might do with this data:
 
 <pre><code>
@@ -213,4 +215,4 @@ big_airports = FOREACH by_year {
                };
 </code></pre>
 
-and so on.
+and so on. The pig documentation "here":http://pig.apache.org/docs/r0.8.0/piglatin_ref2.html is a great overview. For more pig code examples see "sounder":https://github.com/Ganglion/sounder.
