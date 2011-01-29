@@ -36,7 +36,7 @@ Before we can even begin to answer our question we've got to have the data. Fort
 |UTP|12.6666|100.9833|Utapao|Utapao|Thailand|TH|+7.0|11500|59|
 |UTH|17.3863|102.7883|Udon Thani|Udon Thani|Thailand|TH|+7.0|10000|579|
 
-The last data set we need is really just a giant network graph detailing the number of flights and passengers between domestic airports for almost 20 years. It's awesome. This can be downloaded "here":http://infochimps.com/datasets/d35-million-us-domestic-flights-from-1990-to-2009 And here's what that data set looks like:
+The last data set we need is really just a giant network graph detailing the number of flights and passengers between domestic airports for almost 20 years. It's awesome. This can be downloaded for free "here":http://tinyurl.com/infochimpsflights for data day only. And here's what that data set looks like:
 
 |origin_airport|destin_airport|origin_city|destin_city|passengers|seats|flights|distance|month|origin_pop|destin_pop|
 |MFR|RDM|Medford, OR      |Bend, OR|  0|  0|1| 156|200810| 200298|157730|
@@ -46,7 +46,7 @@ The last data set we need is really just a giant network graph detailing the num
 |ICT|EKO|Wichita, KS      |Elko, NV|100|124|1|1007|199607| 552884| 45034|
 |SPS|EKO|Wichita Falls, TX|Elko, NV|122|124|1|1059|199603| 147683| 45034|
 
-Note this data set isn't normally free.
+Note this data set normally lives on infochimps "here":http://infochimps.com/datasets/d35-million-us-domestic-flights-from-1990-to-2009
 
 h2. Explore Data
 
