@@ -69,11 +69,11 @@ h2. Load Data
 
 This step is (basically) optional. That is, if previously in the day you set up Hadoop in distributed (or pseudo-distributed) mode, this step is for you. Otherwise, put your data files in some suitable work directory (say /data) and keep exploring.
 
-Assuming your data files are called @flights_with_colnames.tsv@ and @airport_locations.tsv@ to upload simply do:
+Assuming your data files are called @flight_edges.tsv@ and @airport_locations.tsv@ to upload simply do:
 
 <pre><code>
 hadoop fs -mkdir /data/domestic/airports
-hadoop fs -put flights_with_colnames.tsv /data/domestic/airports/
+hadoop fs -put flight_edges.tsv /data/domestic/airports/
 hadoop fs -put airport_locations.tsv /data/domestic/airports/
 </code></pre>
 
@@ -83,7 +83,7 @@ Now that we have the data on the hdfs (or locally) let's open up a Pig interacti
 
 <pre><code>
 $: pig
-grunt> flight_edges = LOAD '/data/domestic/airports/flights_with_colnames' AS (origin_code:chararray, destin_code:chararray, origin_city:chararray, destin_city:chararray, passengers:int, seats:int, flights:int, distance:float, month:int, origin_pop:int, destin_pop:int);
+grunt> flight_edges = LOAD '/data/domestic/airports/flight_edges.tsv' AS (origin_code:chararray, destin_code:chararray, origin_city:chararray, destin_city:chararray, passengers:int, seats:int, flights:int, distance:float, month:int, origin_pop:int, destin_pop:int);
 grunt> ten_flight_edges = LIMIT flight_edges 10;
 grunt> DUMP ten_flight_edges;
 </code></pre>
@@ -189,10 +189,10 @@ and run it (save the code into a file called 'degree_distribution.pig' or just r
 
 <pre><code>
 # local mode
-pig -x local -p FLIGHT_EDGES=/data/domestic/airports/flights_with_colnames.tsv -p DEG_DIST=/data/domestic/airports/degree_distribution degree_distribution.pig
+pig -x local -p FLIGHT_EDGES=/data/domestic/airports/flight_edges.tsv -p DEG_DIST=/data/domestic/airports/degree_distribution degree_distribution.pig
 
 # hadoop mode
-pig -p FLIGHT_EDGES=/data/domestic/airports/flights_with_colnames.tsv -p DEG_DIST=/data/domestic/airports/degree_distribution degree_distribution.pig
+pig -p FLIGHT_EDGES=/data/domestic/airports/flight_edges.tsv -p DEG_DIST=/data/domestic/airports/degree_distribution degree_distribution.pig
 </code></pre>
 
 h4. Geo-Location
