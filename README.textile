@@ -1,10 +1,14 @@
 h1. Airports
 
-Code and outline for the training session on Pig at "Data Day Austin 2011":http://geekaustin.org/news/2011/01/05/hadoop-training-austin-50-no-way. We will not 'learn Pig' at this training session. Instead, we will 'learn **enough** Pig' to answer some interesting questions. Namely, how have domestic airports changed since 1990?
+WARNING: This is a technical and hands on workshop. Hoping for a lecture? Go to a different talk.
 
-Take-away: How can we integrate Apache Pig into an analytic workflow?
+I will not be lecturing on Pig. By diving right in and actually using Apache Pig to solve an interesting problem we'll see some of its peculiarities, how to work with it, and how to integrate it into a typical analytic workflow. The idea here is to use me, yourself, your neighbors, and possibly even google to work through the following outline: 
 
 h2. Outline
+
+The question we want to answer is a simple (but interesting) one:
+
+"How have domestic airports changed since 1990?"
 
 * Get Data
 ** We will gather all our raw data sources together
@@ -19,6 +23,15 @@ h2. Outline
 ** join with geo-location
 * Get answers
 ** look at degree (passenger, seat, and flight) distributions as a function of time 
+
+Got it? Let's take an hour and see how far we get. Go.
+
+
+-------------------------------------------------------------------------------
+
+h2. Get your tools
+
+You will definitely need a laptop (or a desktop if you're crazy enough to carry one in on your back like a sherpa), a unix terminal, and a text editor. You can follow along without these things but it's going to be a lot less fun.
 
 h2. Get Data
 
